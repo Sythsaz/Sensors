@@ -160,7 +160,7 @@ void printCurrentNet()
   }
 }
 
-bool GetCCS811()
+bool GetCCS811()//return true or false if data has been acquired or not
 {
   if (sensor.checkDataReady() == true)
   {
@@ -178,9 +178,9 @@ bool GetCCS811()
 void loop()
 {
   delay(250);
-  GetCCS811();
+  GetCCS811();//Get air quality data from sensor, return bool if acquired or not
 
-  if (CCS811Fail = true)
+  if (CCS811Fail = true)//air quality data not acquired
   {
     if (secDebug = true)
     {
@@ -202,7 +202,7 @@ void loop()
   sensor.writeBaseLine(0x847B);
   // delay cannot be less than measurement cycle
   // delay(1000);
-  if (wifi_setup == false)
+  if (wifi_setup == false)//Print wifi data once
   {
     printCurrentNet();
     printWifiData();
