@@ -3,14 +3,25 @@
 #include <SPI.h>
 #include <WiFiNINA_Generic.h>
 #include <secrets.h>
+#include <havars.h>
 
 static bool secDebug = SECRET_DEBUG;
-int CO2PPM = 0;
-int TVOCPPB = 0;
-bool CCS811Fail = false;
-bool sensorCheck = false;
-bool wifi_setup = false;
+struct intvars //struct comman vars
+{
+  int CO2PPM0;
+  int TVOCPPB0;
+};
 
+
+struct boolvars //struct common bools
+{
+  bool CCS811Fail;
+  bool sensorCheck;
+  bool wifi_setup;
+};
+
+intvars ints; //declare as ints
+boolvars bools; //declare as bools
 /*
  * IIC address default 0x5A, the address becomes 0x5B if the ADDR_SEL is soldered.
  */
@@ -23,14 +34,21 @@ int status = WL_IDLE_STATUS; // the WiFi radio's status
 
 void setup()
 {
+  pinMode(ledBu, OUTPUT);
   if (secDebug == true)
   {
     Serial.begin(9600);
+    digitalWrite(ledBu, HIGH);
+    delay(500); //flash led
+    digitalWrite(ledBu, LOW);
   }
 
   while (sensor.begin() != 0)
   {
     delay(1000);
+    digitalWrite(ledBu, HIGH);
+    delay(500);//flash led
+    digitalWrite(ledBu, LOW);
   }
   /**
    * @brief Set measurement cycle
@@ -49,6 +67,9 @@ void setup()
     if (secDebug == true)
     {
       Serial.println("Communication with WiFi module failed!");
+      digitalWrite(ledBu, HIGH);
+      delay(500);//flash led
+      digitalWrite(ledBu, LOW);
     }
     // don't continue
     while (true)
@@ -64,6 +85,9 @@ void setup()
     }
     // Connect to WPA/WPA2 network:
     status = WiFi.begin(ssid, pass);
+    digitalWrite(ledBu, HIGH);
+    delay(500);//flash led
+    digitalWrite(ledBu, LOW);
     // wait 10 seconds for connection:
     delay(10000);
   }
@@ -76,6 +100,9 @@ void setup()
 
 void printMacAddress(byte mac[])
 {
+  digitalWrite(ledBu, HIGH);
+  delay(500);//flash led
+  digitalWrite(ledBu, LOW);
   for (int i = 5; i >= 0; i--)
   {
     if (mac[i] < 16)
@@ -105,6 +132,9 @@ void printMacAddress(byte mac[])
 
 void printWifiData()
 {
+  digitalWrite(ledBu, HIGH);
+  delay(500);//flash led
+  digitalWrite(ledBu, LOW);
   // print your board's IP address:
   IPAddress ip = WiFi.localIP();
   if (secDebug == true)
@@ -126,6 +156,9 @@ void printWifiData()
 
 void printCurrentNet()
 {
+  digitalWrite(ledBu, HIGH);
+  delay(500);//flash led
+  digitalWrite(ledBu, LOW);
   // print the SSID of the network you're attached to:
   if (secDebug == true)
   {
@@ -160,31 +193,40 @@ void printCurrentNet()
   }
 }
 
-bool GetCCS811()//return true or false if data has been acquired or not
+bool GetCCS811() // return true or false if data has been acquired or not
 {
   if (sensor.checkDataReady() == true)
   {
-    CO2PPM = sensor.getCO2PPM();
-    TVOCPPB = sensor.getTVOCPPB();
+    ints.CO2PPM0 = sensor.getCO2PPM();
+    ints.TVOCPPB0 = sensor.getTVOCPPB();
+    digitalWrite(ledBu, HIGH);
+    delay(500);//flash led
+    digitalWrite(ledBu, LOW);
     return true;
   }
   else
   {
+    digitalWrite(ledBu, HIGH);
+    delay(500);//flash led
+    digitalWrite(ledBu, LOW);
+    bools.CCS811Fail = true;
     return false;
-    CCS811Fail = true;
   }
 }
 
 void loop()
 {
   delay(250);
-  GetCCS811();//Get air quality data from sensor, return bool if acquired or not
+  GetCCS811(); // Get air quality data from sensor, return bool if acquired or not
 
-  if (CCS811Fail = true)//air quality data not acquired
+  if (bools.CCS811Fail = true) // air quality data not acquired
   {
     if (secDebug = true)
     {
       Serial.println("CCS811 Failure?");
+      digitalWrite(ledBu, HIGH);
+      delay(500);//flash led
+      digitalWrite(ledBu, LOW);
     }
   }
   else
@@ -202,10 +244,10 @@ void loop()
   sensor.writeBaseLine(0x847B);
   // delay cannot be less than measurement cycle
   // delay(1000);
-  if (wifi_setup == false)//Print wifi data once
-  {
+  if (bools.wifi_setup == false) // Print wifi data once
+  { 
     printCurrentNet();
     printWifiData();
-    wifi_setup = true;
+    bools.wifi_setup = true;
   }
 }
