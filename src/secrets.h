@@ -5,8 +5,6 @@
 
 /////////////////////////////////////////////////////////
 
-#define ledBu "13"
-
 struct intvars // struct comman vars
 {
     int CO2PPM0;

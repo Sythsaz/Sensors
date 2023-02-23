@@ -23,26 +23,41 @@ char ssid[] = SECRET_SSID;   // your network SSID (name)
 char pass[] = SECRET_PASS;   // your network password (use for WPA, or use as key for WEP)
 int status = WL_IDLE_STATUS; // the WiFi radio's status
 
-void flashLed(){
-  digitalWrite(ledBu, HIGH);
-  delay(500); // flash led
-  digitalWrite(ledBu, LOW);
-}
+// general class to simplify the syntax to write to a pin
+class PinOut {
+  public:
+    PinOut(uint8_t pin): m_pin(pin) {
+      pinMode(pin, OUTPUT);
+    }
+
+    PinOut& operator= (uint8_t state) {
+      digitalWrite(m_pin, state ? HIGH : LOW);
+      return *this;
+    }
+
+  private:
+    uint8_t m_pin;
+};
+
+// example usage: create a "led" object, which uses the pin number LED_BUILTIN
+PinOut led(LED_BUILTIN);
 
 void setup()
 {
-  pinMode(ledBu, OUTPUT);
-
+  Serial.begin(9600);
   if (secDebug == true)
   {
-    Serial.begin(9600);
-    flashLed();
+    
+    led = 1;
+    delay(10);
+    led = 0;
   }
 
   while (sensor.begin() != 0)
   {
-    delay(1000);
-    flashLed();
+    led = 1;
+    delay(10);
+    led = 0;
   }
   /**
    * @brief Set measurement cycle
@@ -68,7 +83,9 @@ void connect()
     if (secDebug == true)
     {
       Serial.println("Communication with WiFi module failed!");
-      flashLed();
+      led = 1;
+      delay(10);
+      led = 0;
     }
     // don't continue
     while (true);
@@ -83,7 +100,9 @@ void connect()
     }
     // Connect to WPA/WPA2 network:
     status = WiFi.begin(ssid, pass);
-    flashLed();
+    led = 1;
+    delay(10);
+    led = 0;
     // wait 10 seconds for connection:
     delay(10000);
   }
@@ -124,7 +143,9 @@ void messageReceived(String &topic, String &payload)
 
 void printMacAddress(byte mac[])
 {
-  flashLed();
+  led = 1;
+  delay(10);
+  led = 0;
   for (int i = 5; i >= 0; i--)
   {
     if (mac[i] < 16)
@@ -154,7 +175,9 @@ void printMacAddress(byte mac[])
 
 void printWifiData()
 {
-  flashLed();
+  led = 1;
+  delay(10);
+  led = 0;
   // print your board's IP address:
   IPAddress ip = WiFi.localIP();
   if (secDebug == true)
@@ -176,7 +199,9 @@ void printWifiData()
 
 void printCurrentNet()
 {
-  flashLed();
+  led = 1;
+  delay(10);
+  led = 0;
   // print the SSID of the network you're attached to:
   if (secDebug == true)
   {
@@ -217,13 +242,17 @@ bool GetCCS811() // return true or false if data has been acquired or not
   {
     ints.CO2PPM0 = sensor.getCO2PPM();
     ints.TVOCPPB0 = sensor.getTVOCPPB();
-    flashLed();
+    led = 1;
+    delay(10);
+    led = 0;
     bools.CCS811Fail = false;
     return true;
   }
   else
   {
-    flashLed();
+    led = 1;
+    delay(10);
+    led = 0;
     bools.CCS811Fail = true;
     return false;
   }
@@ -255,7 +284,9 @@ void loop()
     if (secDebug = true)
     {
       Serial.println("CCS811 Failure?");
-      flashLed();
+      led = 1;
+      delay(150);
+      led = 0;
     }
   }
   else if(bools.CCS811Fail = false) // air quality data acquired
