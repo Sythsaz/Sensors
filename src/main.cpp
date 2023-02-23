@@ -27,7 +27,34 @@ void flashLed(){
   digitalWrite(ledBu, HIGH);
   delay(500); // flash led
   digitalWrite(ledBu, LOW);
-  return;
+}
+
+void setup()
+{
+  pinMode(ledBu, OUTPUT);
+
+  if (secDebug == true)
+  {
+    Serial.begin(9600);
+    flashLed();
+  }
+
+  while (sensor.begin() != 0)
+  {
+    delay(1000);
+    flashLed();
+  }
+  /**
+   * @brief Set measurement cycle
+   * @param cycle:in typedef enum{
+   *                  eClosed,      //Idle (Measurements are disabled in this mode)
+   *                  eCycle_1s,    //Constant power mode, IAQ measurement every second
+   *                  eCycle_10s,   //Pulse heating mode IAQ measurement every 10 seconds
+   *                  eCycle_60s,   //Low power pulse heating mode IAQ measurement every 60 seconds
+   *                  eCycle_250ms  //Constant power mode, sensor measurement every 250ms
+   *                  }eCycle_t;
+   */
+  sensor.setMeasCycle(sensor.eCycle_250ms);
 }
 
 void connect()
@@ -206,34 +233,6 @@ void sendData()
 {
   // client.publish("/hello", "world");
   // client.publish("/hello", "world");
-}
-
-void setup()
-{
-  pinMode(ledBu, OUTPUT);
-
-  if (secDebug == true)
-  {
-    Serial.begin(9600);
-    flashLed();
-  }
-
-  while (sensor.begin() != 0)
-  {
-    delay(1000);
-    flashLed();
-  }
-  /**
-   * @brief Set measurement cycle
-   * @param cycle:in typedef enum{
-   *                  eClosed,      //Idle (Measurements are disabled in this mode)
-   *                  eCycle_1s,    //Constant power mode, IAQ measurement every second
-   *                  eCycle_10s,   //Pulse heating mode IAQ measurement every 10 seconds
-   *                  eCycle_60s,   //Low power pulse heating mode IAQ measurement every 60 seconds
-   *                  eCycle_250ms  //Constant power mode, sensor measurement every 250ms
-   *                  }eCycle_t;
-   */
-  sensor.setMeasCycle(sensor.eCycle_250ms);
 }
 
 void loop()
